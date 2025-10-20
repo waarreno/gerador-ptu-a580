@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador PTU A580</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='15' fill='%232d5016'/><text x='50' y='70' font-size='45' font-weight='bold' font-family='Arial' text-anchor='middle' fill='white'>PTU</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .header { background: #2d5016; color: white; padding: 30px; text-align: center; }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .content { padding: 30px; }
+    .section-title { background: #e0e0e0; padding: 12px; font-weight: bold; margin: 20px 0 10px 0; border-radius: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+    .field { display: flex; flex-direction: column; }
+    .field label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+    .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .field small { color: #666; font-size: 12px; margin-top: 3px; }
+    .actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 30px 0; }
+    .btn { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .btn-green { background: #28a745; color: white; }
+    .btn-blue { background: #007bff; color: white; }
+    .btn-purple { background: #6f42c1; color: white; }
+    .btn-yellow { background: #ffc107; color: #333; }
+    .btn-red { background: #dc3545; color: white; }
+    .log-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .log-table th, .log-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .log-table th { background: #e0e0e0; font-weight: bold; }
+    .log-ok { background: #d4edda; }
+    .log-erro { background: #f8d7da; }
+    .log-aviso { background: #fff3cd; }
+    .preview { background: #f8f9fa; padding: 20px; border-radius: 4px; margin-top: 20px; display: none; }
+    .preview-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .preview-table th, .preview-table td { border: 1px solid #ddd; padding: 8px; }
+    .preview-table th { background: #e0e0e0; }
+    .bg-green { background: #d4edda; }
+    .bg-yellow { background: #fff3cd; }
+    .preview-content { background: #1e1e1e; color: #0f0; padding: 15px; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 12px; }
+    .pdf-sugerido { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 15px 0; border-radius: 4px; }
+    .pdf-sugerido strong { color: #1976d2; font-size: 16px; }
+    .pdf-sugerido code { background: white; padding: 5px 10px; border-radius: 3px; font-size: 14px; color: #333; display: inline-block; margin-top: 8px; }
+    .sidebar { background: #e3f2fd; padding: 20px; border-radius: 4px; }
+    .codes { font-size: 13px; line-height: 1.8; }
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏥 GERADOR DE ARQUIVO PTU A580</h1>
+      <p>Fatura de Uso Geral - Sistema Unimed</p>
+    </div>
+    <div class="content">
+      <div class="main-grid">
+        <div>
+          <form id="formPTU">
+            <div class="section-title">DADOS DO HEADER (R581)</div>
+            
+            <div class="grid">
+              <div class="field">
+                <label>Código Unimed Destino: *</label>
+                <input type="text" name="CD_UNI_DES" id="cdUniDes" maxlength="4" placeholder="Ex: 64">
+                <small>Numérico (ex: 64 → 0064)</small>
+              </div>
+              
+              <div class="field">
+                <label>Código Unimed Origem: *</label>
+                <input type="text" name="CD_UNI_ORI" id="cdUniOri" maxlength="4" placeholder="Ex: 988">
+                <small>Numérico (ex: 988 → 0988)</small>
+              </div>
+              
+              <div class="field">
+                <label>Competência (AAMM): *</label>
+                <input type="text" name="NR_COMP" id="nrComp" maxlength="4" placeholder="2507">
+                <small>Obrigatório - 4 dígitos</small>
+              </div>
+              
+              <div class="field">
+                <label>Data Vencimento: *</label>
+                <input type="text" name="DT_VEN_DOC" maxlength="8" placeholder="20250715">
+                <small>Formato: AAAAMMDD</small>
+              </div>
+              
+              <div class="field">
+                <label>Valor Total: *</label>
+                <input type="text" name="VL_TOT_DOC" id="vlTotDoc" placeholder="0.00" class="currency-input">
+                <small>Digite apenas números (Ex: 150050 → 1,500.50)</small>
+              </div>
+              
+              <div class="field">
+                <label>Valor IR:</label>
+                <input type="text" name="VL_IR" id="vlIr" placeholder="0.00" class="currency-input">
+                <small>Opcional</small>
+              </div>
+              
+              <div class="field">
+                <label>Número Documento: *</label>
+                <input type="text" name="NR_DOCUMENTO" id="nrDoc" maxlength="20" placeholder="FAT123">
+                <small>Até 20 caracteres</small>
+              </div>
+              
+              <div class="field">
+                <label>Documento Fiscal: *</label>
+                <input type="text" name="DOC_FISCAL" id="docFiscal" maxlength="20">
+                <small>Igual ao NR_DOCUMENTO</small>
+              </div>
+              
+              <div class="field">
+                <label>Tipo Documento: *</label>
+                <select name="TP_DOC_A580">
+                  <option value="">Selecione...</option>
+                  <option value="1">1 = Fatura</option>
+                  <option value="2">2 = NF</option>
+                  <option value="3">3 = NFe</option>
+                  <option value="4">4 = NDC</option>
+                  <option value="5">5 = Débito</option>
+                </select>
+              </div>
+              
+              <div class="field">
+                <label>ID Cobrança: *</label>
+                <select name="ID_COBRANCA">
+                  <option value="">Selecione...</option>
+                  <option value="1">1 = Benefício Família</option>
+                  <option value="2">2 = Câmara Nacional Compensação</option>
+                  <option value="3">3 = Contribuição Confederativa</option>
+                  <option value="4">4 = Programas/Fundos Especiais</option>
+                  <option value="9">9 = Outros</option>
+                  <option value="10">10 = Produtos de TI</option>
+                  <option value="11">11 = Consultorias</option>
+                  <option value="12">12 = Rateios e mensalidades</option>
+                  <option value="13">13 = Compensação aferição</option>
+                  <option value="14">14 = Programas atenção à saúde</option>
+                  <option value="15">15 = Remoção/Transporte</option>
+                  <option value="16">16 = RDA</option>
+                  <option value="17">17 = Acordo Operacional CNU</option>
+                  <option value="18">18 = Fluxo Pagamento Dinâmico</option>
+                  <option value="19">19 = Rateio Federação RJ</option>
+                </select>
+              </div>
+            </div>
+            <div class="section-title">DADOS OPCIONAIS PTU</div>
+            
+            <div class="grid">
+              <div class="field">
+                <label>Tipo PTU:</label>
+                <select name="TIPO_PTU">
+                  <option value="">Selecione...</option>
+                  <option value="1">1 = Guias Cobrança</option>
+                  <option value="2">2 = PTU A560</option>
+                </select>
+              </div>
+              
+              <div class="field">
+                <label>Nr. Doc. Cobrança:</label>
+                <input type="text" name="NR_DOC_COB" maxlength="20">
+                <small>Se TIPO_PTU=1</small>
+              </div>
+              
+              <div class="field">
+                <label>Número NDC:</label>
+                <input type="text" name="NR_NDC" maxlength="11">
+                <small>Se TIPO_PTU=2</small>
+              </div>
+              
+              <div class="field">
+                <label>Nr. Orig. Cobrança:</label>
+                <input type="text" name="NR_ORIG_COB" maxlength="20">
+                <small>Se TIPO_PTU=2</small>
+              </div>
+              
+              <div class="field" style="grid-column: 1 / -1;">
+                <label>Valor Pago:</label>
+                <input type="text" name="VAL_PAGO" id="valPago" class="currency-input">
+                <small>Se TIPO_PTU=1 ou 2</small>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="sidebar">
+          <h3 style="margin-bottom: 15px;">📋 Códigos Tipo Documento</h3>
+          <div class="codes">
+            1 = Fatura<br>
+            2 = NF<br>
+            3 = NFe<br>
+            4 = NDC<br>
+            9 = Débito<br>
+            <br>
+          </div>
+          <h3 style="margin-bottom: 15px;">📋 Códigos ID Cobrança</h3>
+          <div class="codes">
+            1 = Benefício Família<br>
+            2 = Câmara Nacional Compensação<br>
+            3 = Contribuição Confederativa<br>
+            4 = Programas/Fundos Especiais<br>
+            9 = Outros<br>
+            10 = Produtos de TI<br>
+            11 = Consultorias<br>
+            12 = Rateios e mensalidades<br>
+            13 = Compensação aferição<br>
+            14 = Programas atenção à saúde<br>
+            15 = Remoção/Transporte<br>
+            16 = RDA<br>
+            17 = Acordo Operacional CNU<br>
+            18 = Fluxo Pagamento Dinâmico<br>
+            19 = Rateio Federação RJ
+          </div>
+        </div>
+      </div>
+      <div class="section-title">AÇÕES</div>
+      <div class="actions">
+        <button type="button" onclick="gerarArquivo()" class="btn btn-green">💾 Gerar Arquivo</button>
+        <button type="button" onclick="validarDados()" class="btn btn-blue">✓ Validar Dados</button>
+        <button type="button" onclick="visualizarArquivo()" class="btn btn-purple">👁 Visualizar</button>
+        <button type="button" onclick="carregarDadosTeste()" class="btn btn-yellow">📝 Dados Teste</button>
+        <button type="button" onclick="limparFormulario()" class="btn btn-red">🗑 Limpar</button>
+      </div>
+      <div id="preview" class="preview"></div>
+      <div class="section-title">📊 LOG DE ATIVIDADES</div>
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th style="width: 180px;">Data/Hora</th>
+            <th style="width: 150px;">Ação</th>
+            <th style="width: 100px;">Status</th>
+            <th>Detalhes</th>
+          </tr>
+        </thead>
+        <tbody id="logTable">
+          <tr>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    // Função de formatação de moeda (US format)
+    function formatCurrency(input) {
+      // Remove tudo que não for número
+      let valor = input.value.replace(/\D/g, '');
+      
+      // Se estiver vazio, define como 0
+      if (valor === '') {
+        valor = '0';
+      }
+      
+      // Remove zeros à esquerda, mas mantém pelo menos um zero
+      valor = valor.replace(/^0+/, '') || '0';
+      
+      // Converte para número e divide por 100 para ter 2 casas decimais
+      let numero = parseInt(valor) / 100;
+      
+      // Formata com separador de milhares (vírgula) e 2 casas decimais (ponto)
+      let formatado = numero.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      // Atualiza o campo
+      input.value = formatado;
+    }
+
+    // Aplica formatação em todos os campos de moeda
+    document.querySelectorAll('.currency-input').forEach(input => {
+      // Inicializa com 0.00
+      input.value = '0.00';
+      
+      // Evento de digitação
+      input.addEventListener('input', function(e) {
+        formatCurrency(e.target);
+      });
+      
+      // Previne colagem de texto não numérico
+      input.addEventListener('paste', function(e) {
+        e.preventDefault();
+        let texto = (e.clipboardData || window.clipboardData).getData('text');
+        let numeros = texto.replace(/\D/g, '');
+        e.target.value = numeros;
+        formatCurrency(e.target);
+      });
+    });
+
+    // Função para obter valor numérico puro de um campo formatado
+    function getNumericValue(formattedValue) {
+      return parseFloat(formattedValue.replace(/,/g, '')) || 0;
+    }
+
+    // Auto-preencher DOC_FISCAL
+    document.getElementById('nrDoc').addEventListener('input', function() {
+      document.getElementById('docFiscal').value = this.value;
+    });
+    
+    function addLog(acao, status, detalhes) {
+      const tbody = document.getElementById('logTable');
+      const now = new Date().toLocaleString('pt-BR');
+      
+      if (tbody.children[0].colSpan === 4) {
+        tbody.innerHTML = '';
+      }
+      
+      const classe = status === 'OK' ? 'log-ok' : status === 'ERRO' ? 'log-erro' : 'log-aviso';
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${now}</td>
+        <td>${acao}</td>
+        <td class="${classe}">${status}</td>
+        <td>${detalhes}</td>
+      `;
+      
+      tbody.insertBefore(tr, tbody.firstChild);
+    }
+    
+    function getFormData() {
+      const form = document.getElementById('formPTU');
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((value, key) => {
+        // Para campos de moeda, converte para formato numérico puro
+        if (key === 'VL_TOT_DOC' || key === 'VL_IR' || key === 'VAL_PAGO') {
+          data[key] = getNumericValue(value).toFixed(2);
+        } else {
+          data[key] = value;
+        }
+      });
+      return data;
+    }
+    
+    function carregarDadosTeste() {
+      const hoje = new Date();
+      const venc = new Date(hoje);
+      venc.setDate(venc.getDate() + 30);
+      
+      const aamm = hoje.getFullYear().toString().slice(2) + (hoje.getMonth() + 1).toString().padStart(2, '0');
+      const fmtDate = d => d.getFullYear() + (d.getMonth() + 1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0');
+      const docNum = `FAT${hoje.getDate().toString().padStart(2, '0')}${(hoje.getMonth() + 1).toString().padStart(2, '0')}${hoje.getFullYear().toString().slice(2)}001`;
+      
+      const fields = {
+        CD_UNI_DES: '64',
+        CD_UNI_ORI: '988',
+        NR_COMP: aamm,
+        DT_VEN_DOC: fmtDate(venc),
+        VL_TOT_DOC: '250075', // Será formatado para 2,500.75
+        VL_IR: '0',
+        NR_DOCUMENTO: docNum,
+        DOC_FISCAL: docNum,
+        TP_DOC_A580: '1',
+        ID_COBRANCA: '4',
+        TIPO_PTU: '1',
+        NR_DOC_COB: `COB${docNum.slice(3)}`,
+        VAL_PAGO: '250075' // Será formatado para 2,500.75
+      };
+      
+      Object.keys(fields).forEach(key => {
+        const el = document.querySelector(`[name="${key}"]`);
+        if (el) {
+          el.value = fields[key];
+          // Dispara o evento input para aplicar formatação nos campos de moeda
+          if (el.classList.contains('currency-input')) {
+            formatCurrency(el);
+          }
+        }
+      });
+      
+      addLog('Dados de teste', 'OK', 'Formulário preenchido com exemplos');
+      alert('✓ Dados de teste carregados!');
+    }
+    
+    async function validarDados() {
+      try {
+        const res = await fetch('/api/validar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(getFormData())
+        });
+        
+        const result = await res.json();
+        
+        if (result.valido) {
+          addLog('Validação', 'OK', 'Todos os dados válidos');
+          alert('✓ Validação OK!\nTodos os dados estão corretos.');
+        } else {
+          addLog('Validação', 'ERRO', result.erros.length + ' erro(s)');
+          alert('❌ ERROS:\n\n' + result.erros.join('\n'));
+        }
+      } catch (e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+    
+    async function visualizarArquivo() {
+      try {
+        const res = await fetch('/api/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(getFormData())
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          let html = `
+            <h3>👁 PREVIEW DO ARQUIVO</h3>
+            <p><strong>Nome:</strong> ${result.nomeArquivo}</p>
+            <p><strong>Linhas:</strong> ${result.analise.length}</p>
+            
+            <div class="pdf-sugerido">
+              <strong>📄 Nome sugerido Fatura:</strong>
+              <br>
+              <code>${result.nomePdfSugerido}</code>
+              <br>
+              <small style="color: #666; margin-top: 8px; display: block;">
+                O PDF da fatura emitida no TopSaúde deve ser adicionado manualmente ao arquivo ZIP após o download.<br>
+                Para múltiplos arquivos, use: ...01.pdf, ...02.pdf, ...03.pdf, etc.
+              </small>
+            </div>
+            
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Linha</th>
+                  <th>Tipo</th>
+                  <th>Tamanho</th>
+                  <th>Conteúdo</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          
+          result.analise.forEach(item => {
+            const bg = item.tipo.includes('HEADER') ? 'bg-green' : 'bg-yellow';
+            html += `
+              <tr class="${bg}">
+                <td>${item.numero}</td>
+                <td>${item.tipo}</td>
+                <td>${item.tamanho} chars</td>
+                <td style="font-family: monospace; font-size: 11px; word-break: break-all;">${item.conteudo}</td>
+              </tr>
+            `;
+          });
+          
+          html += `
+              </tbody>
+            </table>
+            
+            <h4>Conteúdo Completo:</h4>
+            <div class="preview-content">${result.conteudo.replace(/\n/g, '<br>')}</div>
+            
+            <button onclick="document.getElementById('preview').style.display='none'" 
+                    class="btn btn-red" style="margin-top: 15px;">Fechar Preview</button>
+          `;
+          
+          const preview = document.getElementById('preview');
+          preview.innerHTML = html;
+          preview.style.display = 'block';
+          
+          addLog('Preview', 'OK', 'Visualização gerada');
+        } else {
+          alert('Erro: ' + result.erro);
+        }
+      } catch (e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+    
+    async function gerarArquivo() {
+      try {
+        const res = await fetch('/api/gerar-arquivo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(getFormData())
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          addLog('Arquivo gerado', 'OK', `Arquivo: ${result.nomeArquivo}`);
+          
+          // Iniciar download
+          window.location.href = `/api/download/${result.nomeArquivo}`;
+          
+          alert(`✓ Arquivo gerado com sucesso!\n\nNome: ${result.nomeArquivo}\nLocal: ${result.caminho}\n\nO download começará automaticamente.`);
+        } else {
+          addLog('Geração', 'ERRO', result.erros.join(', '));
+          alert('❌ ERROS:\n\n' + result.erros.join('\n'));
+        }
+      } catch (e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+    
+    function limparFormulario() {
+      if (confirm('Deseja realmente limpar todos os campos?')) {
+        document.getElementById('formPTU').reset();
+        // Reinicializa campos de moeda
+        document.querySelectorAll('.currency-input').forEach(input => {
+          input.value = '0.00';
+        });
+        addLog('Formulário', 'OK', 'Campos limpos');
+      }
+    }
+  </script>
+</body>
+</html>

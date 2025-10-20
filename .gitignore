@@ -1,0 +1,68 @@
+# Dependências
+node_modules/
+node-portable/
+
+# Arquivos gerados pela aplicação
+arquivos_gerados/
+*.988
+*.zip
+
+# Arquivos temporários
+temp_download/
+*.tmp
+*.temp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de controle da aplicação
+server.lock
+launcher.pid
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Backup
+*.bak
+*.backup
+
+# Arquivos compactados (exceto releases)
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Certificados e chaves
+*.pem
+*.key
+*.cert
+
+# Documentos sensíveis
+config.local.json
+secrets.json
+package-lock.json
